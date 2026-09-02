@@ -18,11 +18,29 @@ function fmtMsk(sec: number) {
   }).format(new Date(sec * 1000));
 }
 
-function placeTone(i: number) {
-  if (i === 0) return "text-gold";
-  if (i === 1) return "text-silver";
-  if (i === 2) return "text-bronze";
-  return "text-subtle";
+function PlaceMedal({ place }: { place: 1 | 2 | 3 }) {
+  const fill = place === 1 ? "#E2B00B" : place === 2 ? "#8E9AA8" : "#C56A2D";
+  const ribbon = place === 1 ? "#3B82F6" : place === 2 ? "#60A5FA" : "#2563EB";
+  return (
+    <svg viewBox="0 0 32 36" className="size-7 shrink-0" aria-label={`${place} место`}>
+      <path d="M10 2h5.2l.8 10H9.4z" fill={ribbon} />
+      <path d="M16.8 2H22l.6 10h-6.6z" fill={ribbon} />
+      <circle cx="16" cy="22" r="12" fill={fill} />
+      <circle cx="16" cy="22" r="9.2" fill="none" stroke="#fff" strokeOpacity="0.35" strokeWidth="1.6" />
+      <text
+        x="16"
+        y="23.2"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fill="#fff"
+        fontSize="12"
+        fontWeight="700"
+        fontFamily="ui-sans-serif, system-ui, sans-serif"
+      >
+        {place}
+      </text>
+    </svg>
+  );
 }
 
 function rankOf(m: ModRow) {
@@ -122,10 +140,8 @@ export function TopsView() {
           <ol>
             {rows.map((m, i) => (
               <li key={m.steamid} className="border-t border-border px-5 py-3.5 sm:px-6">
-                <div className="flex items-baseline gap-2">
-                  <span className={cn("w-6 shrink-0 text-sm font-semibold tabular-nums", placeTone(i))}>
-                    {i + 1}.
-                  </span>
+                <div className="flex items-center gap-2.5">
+                  <PlaceMedal place={(i + 1) as 1 | 2 | 3} />
                   <p className="min-w-0 flex-1 truncate font-medium">
                     {m.name}
                     <span className="ml-1.5 font-normal text-muted">
