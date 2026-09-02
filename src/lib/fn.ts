@@ -80,7 +80,9 @@ export const getStatsFn = createServerFn({ method: "POST" })
     const me = await getStaff(context.userId);
     if (!me?.caps.canStats) throw new Error("Нет доступа к статистике.");
     const { loadStats } = await import("./server/stats");
-    return loadStats({ refresh: Boolean(data?.refresh) });
+    const { attachLastMonthTop } = await import("./server/tops");
+    const stats = await loadStats({ refresh: Boolean(data?.refresh) });
+    return attachLastMonthTop(stats);
   });
 
 export const searchMembersFn = createServerFn({ method: "POST" })

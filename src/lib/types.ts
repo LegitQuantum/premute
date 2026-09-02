@@ -65,6 +65,13 @@ export type ModRow = {
   done: boolean;
 };
 
+export type LastMonthTop = {
+  name: string;
+  rank: number | null;
+  total: number;
+  steamid: string | null;
+};
+
 export type StatsPayload = {
   month: string;
   updatedAt: number;
@@ -77,6 +84,8 @@ export type StatsPayload = {
   };
   moderators: ModRow[];
   stale: boolean;
+  isMonthFirst?: boolean;
+  lastMonthTop?: LastMonthTop | null;
 };
 
 export type GuildMember = {
