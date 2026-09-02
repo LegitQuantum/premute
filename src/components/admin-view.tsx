@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { listStaffFn, setStaffPerms } from "@/lib/fn";
 import type { StaffListItem, StaffProfile } from "@/lib/types";
@@ -35,6 +36,7 @@ export function AdminView({ me }: { me: StaffProfile }) {
           canVoice: next.canVoice,
           canMods: next.canMods,
           isOwner: next.isOwner,
+          tag: next.tag,
         },
       });
       setRows((prev) => prev.map((r) => (r.userId === userId ? updated : r)));
@@ -59,7 +61,7 @@ export function AdminView({ me }: { me: StaffProfile }) {
         <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-accent">Админ панель</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Доступ к вкладкам</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">
-          Выдавайте статистику, модерирование, озвучивание и управление составом модераторов.
+          Выдавайте статистику, модерирование, озвучивание, теги у аватарки и управление составом модераторов.
           {me.caps.canGrantOwner
             ? " Только вы можете назначать других владельцев — они получат все вкладки, но не смогут раздавать владельца."
             : " Назначать владельцев может только корневой владелец."}
@@ -94,6 +96,7 @@ export function AdminView({ me }: { me: StaffProfile }) {
                         ) : u.isOwner ? (
                           <Badge tone="accent">владелец</Badge>
                         ) : null}
+                        {u.tag ? <Badge>{u.tag}</Badge> : null}
                       </div>
                       <p className="truncate text-xs text-subtle">
                         {u.email || "—"}
@@ -134,6 +137,13 @@ export function AdminView({ me }: { me: StaffProfile }) {
                         onChange={(v) => void patch(u.userId, { ...u, isOwner: v })}
                       />
                     ) : null}
+                    {me.caps.isOwner ? (
+                      <TagField
+                        value={u.tag}
+                        disabled={locked}
+                        onSave={(tag) => void patch(u.userId, { ...u, tag })}
+                      />
+                    ) : null}
                   </div>
                 </li>
               );
@@ -142,6 +152,41 @@ export function AdminView({ me }: { me: StaffProfile }) {
         )}
       </div>
     </div>
+  );
+}
+
+function TagField({
+  value,
+  disabled,
+  onSave,
+}: {
+  value: string | null;
+  disabled?: boolean;
+  onSave: (tag: string | null) => void;
+}) {
+  const [text, setText] = useState(value ?? "");
+  useEffect(() => {
+    setText(value ?? "");
+  }, [value]);
+  return (
+    <label className="grid gap-1 text-xs text-muted">
+      Тег
+      <Input
+        className="h-8 w-36"
+        maxLength={24}
+        disabled={disabled}
+        placeholder="например CURATOR"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={() => {
+          const next = text.trim() || null;
+          if (next !== (value || null)) onSave(next);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+        }}
+      />
+    </label>
   );
 }
 

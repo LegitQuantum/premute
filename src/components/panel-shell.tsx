@@ -3,6 +3,7 @@ import { BarChart3, Shield, ShieldCheck, Trophy, Users, Volume2 } from "lucide-r
 import { UserButton } from "@/lib/auth/gates";
 import { cn } from "@/lib/utils";
 import type { Caps } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
 
 export type Tab = "home" | "stats" | "tops" | "moderation" | "voice" | "mods" | "admin";
 
@@ -10,11 +11,13 @@ export function PanelShell({
   caps,
   tab,
   onTab,
+  tag,
   children,
 }: {
   caps: Caps;
   tab: Tab;
   onTab: (t: Tab) => void;
+  tag?: string | null;
   children: ReactNode;
 }) {
   const items: { id: Tab; label: string; icon: typeof BarChart3; show: boolean }[] = [
@@ -68,7 +71,12 @@ export function PanelShell({
               })}
           </nav>
 
-          <div className="flex shrink-0 items-center justify-end [&_>div>span]:hidden [&_button]:h-8 [&_button]:rounded-sm [&_button]:border [&_button]:border-border [&_button]:bg-elevated [&_button]:px-2 [&_button]:text-xs [&_button]:text-muted">
+          <div className="flex shrink-0 items-center justify-end gap-2 [&_>div>span]:hidden [&_button]:h-8 [&_button]:rounded-sm [&_button]:border [&_button]:border-border [&_button]:bg-elevated [&_button]:px-2 [&_button]:text-xs [&_button]:text-muted">
+            {tag ? (
+              <Badge className="max-w-[9rem] truncate normal-case tracking-normal" tone="accent">
+                {tag}
+              </Badge>
+            ) : null}
             <UserButton />
           </div>
         </div>
