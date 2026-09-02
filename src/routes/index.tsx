@@ -68,6 +68,7 @@ function Home() {
     <>
       <PanelShell
         caps={profile.caps}
+        tag={profile.tag}
         tab={waiting ? "home" : tab}
         onTab={(t) => {
           if (waiting) return;
