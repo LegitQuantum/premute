@@ -78,7 +78,7 @@ function Home() {
           <WaitingView profile={profile} onUpdate={setProfile} />
         ) : tab === "stats" && profile.caps.canStats ? (
           <StatsView />
-        ) : tab === "tops" && profile.caps.canStats ? (
+        ) : tab === "tops" ? (
           <TopsView />
         ) : tab === "moderation" && profile.caps.canModeration ? (
           <ModerationView />
