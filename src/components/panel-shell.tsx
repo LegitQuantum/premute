@@ -23,30 +23,27 @@ export function PanelShell({
     { id: "moderation", label: "Модерирование", icon: ShieldCheck, show: caps.canModeration },
     { id: "voice", label: "Озвучивание", icon: Volume2, show: caps.canVoice },
     { id: "mods", label: "Модераторы", icon: Users, show: caps.canMods },
-    { id: "admin", label: "Админ панель", icon: Shield, show: caps.canAdmin },
+    { id: "admin", label: "Админ", icon: Shield, show: caps.canAdmin },
   ];
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
       <header className="sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-[92rem] items-center gap-2 px-3 py-2">
           <button
             type="button"
             onClick={() => onTab("home")}
-            className="flex items-center gap-3 self-start"
+            className="flex shrink-0 items-center gap-2"
           >
-            <span className="grid size-9 place-items-center rounded-sm border border-accent/40 bg-elevated font-semibold tracking-tight">
+            <span className="grid size-8 place-items-center rounded-sm border border-accent/40 bg-elevated text-sm font-semibold tracking-tight">
               P
             </span>
-            <span className="text-left">
+            <span className="hidden text-left sm:block">
               <span className="block text-sm font-semibold leading-none">PremuteBOT</span>
-              <span className="mt-1 block text-xs uppercase tracking-[0.18em] text-subtle">
-                control panel
-              </span>
             </span>
           </button>
 
-          <nav className="flex flex-1 flex-wrap items-center gap-1 sm:justify-center">
+          <nav className="flex min-w-0 flex-1 flex-nowrap items-center justify-center gap-0.5 overflow-x-auto">
             {items
               .filter((i) => i.show)
               .map((i) => {
@@ -58,20 +55,20 @@ export function PanelShell({
                     type="button"
                     onClick={() => onTab(i.id)}
                     className={cn(
-                      "inline-flex h-11 items-center gap-2 rounded-sm px-3 text-sm font-medium transition-colors",
+                      "inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm px-2.5 text-xs font-medium transition-colors sm:text-sm",
                       active
                         ? "bg-elevated text-fg"
                         : "text-muted hover:bg-elevated/70 hover:text-fg",
                     )}
                   >
-                    <Icon className="size-4" />
+                    <Icon className="size-3.5" />
                     {i.label}
                   </button>
                 );
               })}
           </nav>
 
-          <div className="flex items-center justify-end [&_button]:h-11 [&_button]:rounded-sm [&_button]:border [&_button]:border-border [&_button]:bg-elevated [&_button]:px-3 [&_button]:text-xs [&_button]:text-muted">
+          <div className="flex shrink-0 items-center justify-end [&_button]:h-9 [&_button]:rounded-sm [&_button]:border [&_button]:border-border [&_button]:bg-elevated [&_button]:px-2.5 [&_button]:text-xs [&_button]:text-muted">
             <UserButton />
           </div>
         </div>
