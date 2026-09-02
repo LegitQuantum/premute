@@ -31,3 +31,27 @@ export const MUTE_PRESETS = [
   { label: "24 часа", ms: 24 * 60 * 60 * 1000 },
   { label: "7 дней", ms: 7 * 24 * 60 * 60 * 1000 },
 ] as const;
+
+const MUTE_UNIT_MS: Record<string, number> = {
+  s: 1000,
+  m: 60 * 1000,
+  h: 60 * 60 * 1000,
+  d: 24 * 60 * 60 * 1000,
+};
+
+/** `1s` `10m` `2h` `1d` or stacked `1d2h30m`. Discord timeout max = 28d. */
+export function parseMuteDuration(raw: string): { ms: number } | { error: string } {
+  const text = raw.trim().toLowerCase();
+  if (!text) return { error: "Укажите срок, например 10m или 1h30m" };
+  const tokens = [...text.matchAll(/(\d+)\s*([smhd])/g)];
+  if (!tokens.length) return { error: "Формат: 1s, 1m, 1h, 1d (можно вместе: 1h30m)" };
+  const consumed = tokens.map((m) => m[0].replace(/\s+/g, "")).join("");
+  const compact = text.replace(/\s+/g, "");
+  if (consumed !== compact) return { error: "Формат: 1s, 1m, 1h, 1d (можно вместе: 1h30m)" };
+  let ms = 0;
+  for (const m of tokens) ms += Number(m[1]) * MUTE_UNIT_MS[m[2]];
+  if (ms <= 0) return { error: "Срок должен быть больше нуля" };
+  const max = 28 * 24 * 60 * 60 * 1000;
+  if (ms > max) return { error: "Максимум 28 дней (лимит Discord)" };
+  return { ms };
+}
