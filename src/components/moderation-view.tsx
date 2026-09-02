@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { moderateFn, searchMembersFn } from "@/lib/fn";
-import { MUTE_PRESETS } from "@/lib/constants";
+import { MUTE_PRESETS, parseMuteDuration } from "@/lib/constants";
 import type { GuildMember } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +28,9 @@ export function ModerationView() {
   const [action, setAction] = useState<Action>("warn");
   const [reason, setReason] = useState("");
   const [duration, setDuration] = useState(MUTE_PRESETS[0].ms);
+  const [customDur, setCustomDur] = useState("");
   const [busy, setBusy] = useState(false);
+  const customParsed = customDur.trim() ? parseMuteDuration(customDur) : null;
 
   async function search(e?: FormEvent) {
     e?.preventDefault();
@@ -54,6 +56,15 @@ export function ModerationView() {
       toast.error("Выберите участника");
       return;
     }
+    let durationMs = duration;
+    if (action === "mute" && customDur.trim()) {
+      const parsed = parseMuteDuration(customDur);
+      if ("error" in parsed) {
+        toast.error(parsed.error);
+        return;
+      }
+      durationMs = parsed.ms;
+    }
     setBusy(true);
     try {
       const res = await moderateFn({
@@ -61,7 +72,7 @@ export function ModerationView() {
           action,
           targetId: target.id,
           reason,
-          durationMs: action === "mute" ? duration : undefined,
+          durationMs: action === "mute" ? durationMs : undefined,
         },
       });
       toast.success(res.message);
@@ -164,12 +175,31 @@ export function ModerationView() {
                   key={p.ms}
                   type="button"
                   size="sm"
-                  variant={duration === p.ms ? "default" : "secondary"}
-                  onClick={() => setDuration(p.ms)}
+                  variant={!customDur.trim() && duration === p.ms ? "default" : "secondary"}
+                  onClick={() => {
+                    setCustomDur("");
+                    setDuration(p.ms);
+                  }}
                 >
                   {p.label}
                 </Button>
               ))}
+            </div>
+            <div className="mt-3 grid gap-1.5">
+              <Label htmlFor="custom-mute">Свой срок</Label>
+              <Input
+                id="custom-mute"
+                placeholder="1s · 10m · 2h · 1d или 1h30m"
+                value={customDur}
+                onChange={(e) => setCustomDur(e.target.value)}
+              />
+              {customParsed && "error" in customParsed ? (
+                <p className="text-xs text-danger">{customParsed.error}</p>
+              ) : customParsed && "ms" in customParsed ? (
+                <p className="text-xs text-muted">Будет выдано на {Math.max(1, Math.round(customParsed.ms / 1000))} сек.</p>
+              ) : (
+                <p className="text-xs text-subtle">s — секунды, m — минуты, h — часы, d — дни</p>
+              )}
             </div>
           </div>
         ) : null}
