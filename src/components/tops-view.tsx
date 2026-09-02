@@ -67,7 +67,8 @@ export function TopsView() {
     return data.moderators
       .filter((m) => TOP_RANKS.has(rankOf(m)))
       .slice()
-      .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, "ru"));
+      .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, "ru"))
+      .slice(0, 3);
   }, [data]);
 
   if (loading) {
@@ -99,7 +100,7 @@ export function TopsView() {
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent">Топ месяца</p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Топы модераторов</h1>
           <p className="mt-1 text-sm text-muted">
-            Только модераторы и мл. модераторы · по количеству наказаний · {data.month}
+            Только топ-3 среди модераторов и мл. модераторов · {data.month}
             {data.stale ? " · кэш" : ""}
           </p>
         </div>
