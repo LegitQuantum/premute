@@ -9,6 +9,7 @@ import { LoginScreen } from "@/components/login-screen";
 import { HomeHero, PanelShell, type Tab } from "@/components/panel-shell";
 import { WaitingView } from "@/components/waiting-view";
 import { StatsView } from "@/components/stats-view";
+import { TopsView } from "@/components/tops-view";
 import { ModerationView } from "@/components/moderation-view";
 import { VoiceView } from "@/components/voice-view";
 import { AdminView } from "@/components/admin-view";
@@ -77,6 +78,8 @@ function Home() {
           <WaitingView profile={profile} onUpdate={setProfile} />
         ) : tab === "stats" && profile.caps.canStats ? (
           <StatsView />
+        ) : tab === "tops" && profile.caps.canStats ? (
+          <TopsView />
         ) : tab === "moderation" && profile.caps.canModeration ? (
           <ModerationView />
         ) : tab === "voice" && profile.caps.canVoice ? (
