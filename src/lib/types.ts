@@ -16,6 +16,7 @@ export type StaffProfile = {
   email: string | null;
   image: string | null;
   discordId: string | null;
+  tag: string | null;
   isRoot: boolean;
   isOwner: boolean;
   canStats: boolean;

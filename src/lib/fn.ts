@@ -55,6 +55,7 @@ export const setStaffPerms = createServerFn({ method: "POST" })
       canVoice?: boolean;
       canMods?: boolean;
       isOwner?: boolean;
+      tag?: string | null;
     }) => d,
   )
   .handler(async ({ context, data }): Promise<StaffListItem> => {
@@ -67,6 +68,7 @@ export const setStaffPerms = createServerFn({ method: "POST" })
       canVoice: data.canVoice,
       canMods: data.canMods,
       isOwner: data.isOwner,
+      tag: data.tag,
     });
     await writeLog(context.userId, "set_perms", JSON.stringify(data));
     return updated;
