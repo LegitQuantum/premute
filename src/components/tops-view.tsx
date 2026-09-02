@@ -22,7 +22,7 @@ function PlaceMedal({ place }: { place: 1 | 2 | 3 }) {
   const fill = place === 1 ? "#E2B00B" : place === 2 ? "#8E9AA8" : "#C56A2D";
   const ribbon = place === 1 ? "#3B82F6" : place === 2 ? "#60A5FA" : "#2563EB";
   return (
-    <svg viewBox="0 0 32 36" className="size-7 shrink-0" aria-label={`${place} место`}>
+    <svg viewBox="0 0 32 36" className="size-9 shrink-0" aria-label={`${place} место`}>
       <path d="M10 2h5.2l.8 10H9.4z" fill={ribbon} />
       <path d="M16.8 2H22l.6 10h-6.6z" fill={ribbon} />
       <circle cx="16" cy="22" r="12" fill={fill} />
@@ -128,7 +128,19 @@ export function TopsView() {
         </Button>
       </header>
 
-      <section className="relative mt-8 overflow-hidden rounded-lg border border-border bg-surface shadow-[var(--shadow-panel)]">
+      {data.isMonthFirst && data.lastMonthTop ? (
+        <div className="mt-6 rounded-lg border border-gold/40 bg-elevated px-5 py-4 text-center shadow-[var(--shadow-panel)] sm:px-6">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-gold">ТОП 1 прошлого месяца. Поздравляем</p>
+          <p className="mt-2 text-lg font-semibold tracking-tight">
+            {data.lastMonthTop.name}
+            <span className="ml-1.5 text-sm font-normal text-muted">
+              ({RANK_SHORT[Number(data.lastMonthTop.rank ?? 0)] ?? "мод"}) · {data.lastMonthTop.total}
+            </span>
+          </p>
+        </div>
+      ) : null}
+
+      <section className="relative mt-6 overflow-hidden rounded-lg border border-border bg-surface shadow-[var(--shadow-panel)]">
         <div className="absolute inset-y-0 left-0 w-1 bg-embed" aria-hidden="true" />
         <div className="flex items-center gap-2 px-5 py-4 sm:px-6">
           <Trophy className="size-4 text-gold" />
