@@ -7,6 +7,12 @@ function flag(v: unknown): boolean {
   return v === true || v === "t" || v === "true";
 }
 
+function sanitizeTag(raw: string | null | undefined): string | null {
+  const text = String(raw ?? "").replace(/\s+/g, " ").trim();
+  if (!text) return null;
+  return text.slice(0, 24);
+}
+
 function iso(v: unknown): string {
   if (v instanceof Date) return v.toISOString();
   return v == null ? "" : String(v);
@@ -52,6 +58,7 @@ type StaffRow = {
   can_moderation: unknown;
   can_voice: unknown;
   can_mods: unknown;
+  tag: string | null;
   created_at: unknown;
   last_seen: unknown;
 };
@@ -64,6 +71,7 @@ function toProfile(row: StaffRow): StaffProfile {
     email: row.email,
     image: row.image,
     discordId: row.discord_id,
+    tag: row.tag ? String(row.tag) : null,
     isRoot: caps.isRoot,
     isOwner: caps.isOwner,
     canStats: flag(row.can_stats),
@@ -169,6 +177,7 @@ export async function updateStaffPermissions(
     canVoice?: boolean;
     canMods?: boolean;
     isOwner?: boolean;
+    tag?: string | null;
   },
 ): Promise<StaffListItem> {
   if (!actor.caps.canAdmin) throw new Error("Недостаточно прав.");
@@ -192,14 +201,20 @@ export async function updateStaffPermissions(
   const canVoice = patch.canVoice ?? target.canVoice;
   const canMods = patch.canMods ?? target.canMods;
   const isOwner = patch.isOwner ?? target.isOwner;
+  if (patch.tag !== undefined && !actor.caps.isOwner) {
+    throw new Error("Теги могут назначать только владельцы.");
+  }
+  const tag = patch.tag !== undefined ? sanitizeTag(patch.tag) : target.tag;
 
+  await sql.query("alter table staff add column if not exists tag text");
   await sql`
     update staff set
       can_stats = ${canStats},
       can_moderation = ${canModeration},
       can_voice = ${canVoice},
       can_mods = ${canMods},
-      is_owner = ${isOwner}
+      is_owner = ${isOwner},
+      tag = ${tag}
     where user_id = ${targetUserId}
   `;
   const rows = await sql<StaffRow>`select * from staff where user_id = ${targetUserId} limit 1`;
