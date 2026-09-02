@@ -18,18 +18,18 @@ export function PanelShell({
   children: ReactNode;
 }) {
   const items: { id: Tab; label: string; icon: typeof BarChart3; show: boolean }[] = [
-    { id: "stats", label: "Статистика", icon: BarChart3, show: caps.canStats },
+    { id: "stats", label: "Стата", icon: BarChart3, show: caps.canStats },
     { id: "tops", label: "Топы", icon: Trophy, show: caps.canStats },
-    { id: "moderation", label: "Модерирование", icon: ShieldCheck, show: caps.canModeration },
-    { id: "voice", label: "Озвучивание", icon: Volume2, show: caps.canVoice },
-    { id: "mods", label: "Модераторы", icon: Users, show: caps.canMods },
+    { id: "moderation", label: "Модер", icon: ShieldCheck, show: caps.canModeration },
+    { id: "voice", label: "Голос", icon: Volume2, show: caps.canVoice },
+    { id: "mods", label: "Моды", icon: Users, show: caps.canMods },
     { id: "admin", label: "Админ", icon: Shield, show: caps.canAdmin },
   ];
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
       <header className="sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[92rem] items-center gap-2 px-3 py-2">
+        <div className="mx-auto flex w-full max-w-none flex-nowrap items-center gap-2 overflow-hidden px-3 py-2">
           <button
             type="button"
             onClick={() => onTab("home")}
@@ -68,7 +68,7 @@ export function PanelShell({
               })}
           </nav>
 
-          <div className="flex shrink-0 items-center justify-end [&_button]:h-9 [&_button]:rounded-sm [&_button]:border [&_button]:border-border [&_button]:bg-elevated [&_button]:px-2.5 [&_button]:text-xs [&_button]:text-muted">
+          <div className="flex shrink-0 items-center justify-end [&_>div>span]:hidden [&_button]:h-8 [&_button]:rounded-sm [&_button]:border [&_button]:border-border [&_button]:bg-elevated [&_button]:px-2 [&_button]:text-xs [&_button]:text-muted">
             <UserButton />
           </div>
         </div>
