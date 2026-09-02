@@ -1,0 +1,101 @@
+export type Caps = {
+  isRoot: boolean;
+  isOwner: boolean;
+  canStats: boolean;
+  canModeration: boolean;
+  canVoice: boolean;
+  canMods: boolean;
+  canAdmin: boolean;
+  canGrantOwner: boolean;
+  waiting: boolean;
+};
+
+export type StaffProfile = {
+  userId: string;
+  displayName: string | null;
+  email: string | null;
+  image: string | null;
+  discordId: string | null;
+  isRoot: boolean;
+  isOwner: boolean;
+  canStats: boolean;
+  canModeration: boolean;
+  canVoice: boolean;
+  canMods: boolean;
+  createdAt: string;
+  lastSeen: string;
+  caps: Caps;
+};
+
+export type StaffListItem = Omit<StaffProfile, "caps">;
+
+export type RosterMod = {
+  steamid: string;
+  name: string;
+  rank: number;
+  discord?: string | null;
+};
+
+export type RosterRank = {
+  rank: number;
+  title: string;
+  week: number;
+  month: number;
+};
+
+export type RosterPayload = {
+  moderators: RosterMod[];
+  ranks: RosterRank[];
+  recounting?: boolean;
+};
+
+export type ModRow = {
+  name: string;
+  steamid: string;
+  rank: number | null;
+  norma: { week: number; month: number } | null;
+  bans: number;
+  mutes: number;
+  total: number;
+  weekTotal: number;
+  removed: number;
+  excluded: number;
+  lastSeenName: string | null;
+  pct: number | null;
+  done: boolean;
+};
+
+export type StatsPayload = {
+  month: string;
+  updatedAt: number;
+  totals: {
+    bans: number;
+    mutes: number;
+    total: number;
+    removed: number;
+    excluded: number;
+  };
+  moderators: ModRow[];
+  stale: boolean;
+};
+
+export type GuildMember = {
+  id: string;
+  username: string;
+  globalName: string | null;
+  nick: string | null;
+  avatar: string | null;
+};
+
+export type VoiceChannel = {
+  id: string;
+  name: string;
+  kind: "voice" | "text";
+};
+
+export type DiscordClaim = {
+  id: string;
+  discordId: string;
+  status: "pending" | "accepted" | "declined" | "error";
+  error?: string | null;
+};

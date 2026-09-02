@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0c0d10;
+  --color-surface: #15171c;
+  --color-elevated: #1c1f26;
+  --color-fg: #eef0f4;
+  --color-muted: #8b909a;
+  --color-subtle: #5c616b;
+  --color-border: color-mix(in oklab, var(--color-fg) 10%, transparent);
+  --color-border-strong: color-mix(in oklab, var(--color-fg) 18%, transparent);
+  --color-accent: #6ea8ff;
+  --color-accent-fg: #0c0d10;
+  --color-danger: #e5484d;
+  --color-warn: #f5a524;
+  --color-success: #3dd68c;
+  --color-gold: #d4b06a;
+  --color-silver: #c5c9d1;
+  --color-bronze: #c4845a;
+  --color-embed: #4d70ef;
+
+  --font-sans: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --shadow-panel: 0 18px 50px -24px rgb(0 0 0 / 0.55);
+
+  --ease-out-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer utilities {
+  .login-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--color-fg) 4.5%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--color-fg) 4.5%, transparent) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 75%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

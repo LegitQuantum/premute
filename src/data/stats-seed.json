@@ -1,0 +1,344 @@
+{
+  "v": 4,
+  "updatedAt": 1788344441,
+  "month": "Сентябрь 2026 г.",
+  "totals": {
+    "bans": 29,
+    "mutes": 41,
+    "total": 70,
+    "removed": 8,
+    "excluded": 2
+  },
+  "moderators": [
+    {
+      "name": "minilyyy",
+      "steamid": "76561199886218120",
+      "rank": 2,
+      "norma": {
+        "week": 30,
+        "month": 150
+      },
+      "bans": 10,
+      "mutes": 5,
+      "total": 15,
+      "weekTotal": 18,
+      "removed": 1,
+      "excluded": 0,
+      "lastSeenName": "minilyyy"
+    },
+    {
+      "name": "Belka",
+      "steamid": "76561199528873388",
+      "rank": 3,
+      "norma": {
+        "week": 0,
+        "month": 70
+      },
+      "bans": 9,
+      "mutes": 6,
+      "total": 15,
+      "weekTotal": 16,
+      "removed": 1,
+      "excluded": 0,
+      "lastSeenName": "6EJlKAˢᵗ"
+    },
+    {
+      "name": "Rolt",
+      "steamid": "76561199440350923",
+      "rank": 2,
+      "norma": {
+        "week": 30,
+        "month": 150
+      },
+      "bans": 1,
+      "mutes": 9,
+      "total": 10,
+      "weekTotal": 10,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": "Rolt"
+    },
+    {
+      "name": "www",
+      "steamid": "76561198996086262",
+      "rank": 4,
+      "norma": {
+        "week": 0,
+        "month": 50
+      },
+      "bans": 7,
+      "mutes": 2,
+      "total": 9,
+      "weekTotal": 9,
+      "removed": 2,
+      "excluded": 1,
+      "lastSeenName": "www"
+    },
+    {
+      "name": "elo",
+      "steamid": "76561199741080676",
+      "rank": 2,
+      "norma": {
+        "week": 30,
+        "month": 150
+      },
+      "bans": 0,
+      "mutes": 8,
+      "total": 8,
+      "weekTotal": 9,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": "диджей смеш"
+    },
+    {
+      "name": "your success",
+      "steamid": "76561198675051863",
+      "rank": 3,
+      "norma": {
+        "week": 0,
+        "month": 70
+      },
+      "bans": 0,
+      "mutes": 6,
+      "total": 6,
+      "weekTotal": 14,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": "your success t.me/hitorivpn"
+    },
+    {
+      "name": "flownezz",
+      "steamid": "76561199293067355",
+      "rank": 1,
+      "norma": {
+        "week": 20,
+        "month": 100
+      },
+      "bans": 0,
+      "mutes": 2,
+      "total": 2,
+      "weekTotal": 5,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": "fr0gnezz"
+    },
+    {
+      "name": "Bread",
+      "steamid": "76561199645130988",
+      "rank": 3,
+      "norma": {
+        "week": 0,
+        "month": 70
+      },
+      "bans": 1,
+      "mutes": 0,
+      "total": 1,
+      "weekTotal": 5,
+      "removed": 3,
+      "excluded": 1,
+      "lastSeenName": "𝓑𝓻𝓮𝓪𝓭"
+    },
+    {
+      "name": "Kenskiy",
+      "steamid": "76561199206934359",
+      "rank": 2,
+      "norma": {
+        "week": 30,
+        "month": 150
+      },
+      "bans": 1,
+      "mutes": 0,
+      "total": 1,
+      "weekTotal": 22,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": "Koko Hekmatyar"
+    },
+    {
+      "name": "Leksus",
+      "steamid": "76561199498577683",
+      "rank": 3,
+      "norma": {
+        "week": 0,
+        "month": 70
+      },
+      "bans": 0,
+      "mutes": 1,
+      "total": 1,
+      "weekTotal": 4,
+      "removed": 1,
+      "excluded": 0,
+      "lastSeenName": "Лексус t.me/hitorivpn"
+    },
+    {
+      "name": "luniks",
+      "steamid": "76561199468993423",
+      "rank": 5,
+      "norma": null,
+      "bans": 0,
+      "mutes": 1,
+      "total": 1,
+      "weekTotal": 1,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": "luniks.s"
+    },
+    {
+      "name": "sayonara",
+      "steamid": "76561199842060317",
+      "rank": 2,
+      "norma": {
+        "week": 30,
+        "month": 150
+      },
+      "bans": 0,
+      "mutes": 1,
+      "total": 1,
+      "weekTotal": 13,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": "sayonara"
+    },
+    {
+      "name": "Hrilock",
+      "steamid": "76561198674719746",
+      "rank": 4,
+      "norma": {
+        "week": 0,
+        "month": 50
+      },
+      "bans": 0,
+      "mutes": 0,
+      "total": 0,
+      "weekTotal": 0,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": null
+    },
+    {
+      "name": "топ 1 энигма",
+      "steamid": "76561199011838789",
+      "rank": 3,
+      "norma": {
+        "week": 0,
+        "month": 70
+      },
+      "bans": 0,
+      "mutes": 0,
+      "total": 0,
+      "weekTotal": 0,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": null
+    },
+    {
+      "name": "liza",
+      "steamid": "76561199826620628",
+      "rank": 5,
+      "norma": null,
+      "bans": 0,
+      "mutes": 0,
+      "total": 0,
+      "weekTotal": 0,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": null
+    },
+    {
+      "name": "Altiera",
+      "steamid": "76561199559786627",
+      "rank": 2,
+      "norma": {
+        "week": 30,
+        "month": 150
+      },
+      "bans": 0,
+      "mutes": 0,
+      "total": 0,
+      "weekTotal": 0,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": null
+    },
+    {
+      "name": "Bazbazbaz",
+      "steamid": "76561198805786012",
+      "rank": 4,
+      "norma": {
+        "week": 0,
+        "month": 50
+      },
+      "bans": 0,
+      "mutes": 0,
+      "total": 0,
+      "weekTotal": 0,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": null
+    },
+    {
+      "name": "Cheta",
+      "steamid": "76561198379314064",
+      "rank": 2,
+      "norma": {
+        "week": 30,
+        "month": 150
+      },
+      "bans": 0,
+      "mutes": 0,
+      "total": 0,
+      "weekTotal": 0,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": null
+    },
+    {
+      "name": "Cortezzz",
+      "steamid": "76561198760121361",
+      "rank": 2,
+      "norma": {
+        "week": 30,
+        "month": 150
+      },
+      "bans": 0,
+      "mutes": 0,
+      "total": 0,
+      "weekTotal": 37,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": "derectory.exe"
+    },
+    {
+      "name": "Hardhorezz",
+      "steamid": "76561199566639200",
+      "rank": 2,
+      "norma": {
+        "week": 30,
+        "month": 150
+      },
+      "bans": 0,
+      "mutes": 0,
+      "total": 0,
+      "weekTotal": 1,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": "Hardhorezz"
+    },
+    {
+      "name": "Vlada67",
+      "steamid": "76561199132694560",
+      "rank": 1,
+      "norma": {
+        "week": 20,
+        "month": 100
+      },
+      "bans": 0,
+      "mutes": 0,
+      "total": 0,
+      "weekTotal": 23,
+      "removed": 0,
+      "excluded": 0,
+      "lastSeenName": "Vlada67❤"
+    }
+  ]
+}
