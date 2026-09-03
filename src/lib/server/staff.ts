@@ -28,10 +28,8 @@ export function computeCaps(row: {
   can_mods: unknown;
 }): Caps {
   const isRoot = flag(row.is_root);
-  const isBotOwnerMain = flag(row.is_bot_owner);
-  // «Владелец сайта» (isOwner) и «Владелец бота» (isBotOwner) дают все вкладки сайта,
-  // но только корневой владелец управляет владельцами бота.
-  const isOwner = isRoot || flag(row.is_owner) || isBotOwnerMain;
+  // «Владелец сайта» — полный доступ к сайту. «Владелец бота» (красный) — команды Discord.
+  const isOwner = isRoot || flag(row.is_owner);
   const canStats = isOwner || flag(row.can_stats);
   const canModeration = isOwner || flag(row.can_moderation);
   const canVoice = isOwner || flag(row.can_voice);
@@ -45,11 +43,10 @@ export function computeCaps(row: {
     canVoice,
     canMods,
     canAdmin,
-    // Красный «Владелец» (владелец бота) и корневой могут выдавать «владельца сайта».
-    canGrantOwner: isRoot || isBotOwnerMain,
-    // Назначать владельца бота и переключать красный «Владелец» ↔ корневой может только корневой.
+    // Новых «владельцев сайта» может назначать только корневой владелец.
+    canGrantOwner: isRoot,
+    // Назначать/снимать «владельцев бота» может только корневой владелец.
     canGrantBotOwner: isRoot,
-    canToggleOwnership: isRoot,
     waiting: !(canStats || canModeration || canVoice || canMods || canAdmin),
   };
 }
@@ -82,7 +79,7 @@ function toProfile(row: StaffRow): StaffProfile {
     discordId: row.discord_id,
     tag: row.tag ? String(row.tag) : null,
     isRoot: caps.isRoot,
-    isOwner: caps.isRoot || flag(row.is_owner),
+    isOwner: caps.isOwner,
     isBotOwner: flag(row.is_bot_owner) && !caps.isRoot,
     canStats: flag(row.can_stats),
     canModeration: flag(row.can_moderation),
@@ -199,11 +196,12 @@ export async function updateStaffPermissions(
   const target = toProfile(targetRows[0]);
 
   const isMainOwner = target.userId === ROOT_DISCORD_ID || target.discordId === ROOT_DISCORD_ID;
+  const actorIsMainOwner = actor.userId === ROOT_DISCORD_ID || actor.discordId === ROOT_DISCORD_ID;
 
-  // Переключатель «красный Владелец» ↔ «Корневой владелец» — только для корневых.
+  // Тумблер «красный Владелец» ↔ «Корневой владелец» — только для главного владельца 652...
   const togglingOwnership = patch.setRoot !== undefined;
-  if (togglingOwnership && !actor.caps.canToggleOwnership) {
-    throw new Error("Переключать между «Владельцем» и «Корневым владельцем» может только корневой владелец.");
+  if (togglingOwnership && !actorIsMainOwner) {
+    throw new Error("Переключать между «Владельцем» и «Корневым владельцем» может только главный владелец 652399540384694292.");
   }
   if (patch.setRoot === true && !target.discordId) {
     throw new Error("Сначала привяжите Discord ID этого пользователя.");
@@ -213,7 +211,7 @@ export async function updateStaffPermissions(
   }
 
   // Обычные изменения прав нельзя вносить в чужого корневого владельца,
-  // зато корневой владелец может понизить другого корневого через тумблер.
+  // зато главный владелец может понизить другого корневого через тумблер.
   if (!togglingOwnership && target.isRoot && target.userId !== actor.userId) {
     throw new Error("Нельзя менять права корневого владельца.");
   }
@@ -221,7 +219,7 @@ export async function updateStaffPermissions(
     throw new Error("Корневого владельца нельзя снять.");
   }
   if (patch.isOwner !== undefined && !actor.caps.canGrantOwner) {
-    throw new Error("Выдавать «владельца сайта» может только корневой владелец или владелец бота.");
+    throw new Error("Назначать владельцев сайта может только корневой владелец.");
   }
   if (patch.isBotOwner !== undefined && !actor.caps.canGrantBotOwner) {
     throw new Error("Назначать владельцев бота может только корневой владелец.");
