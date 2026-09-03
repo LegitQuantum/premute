@@ -54,6 +54,7 @@ type StaffRow = {
   discord_id: string | null;
   is_root: unknown;
   is_owner: unknown;
+  is_bot_owner: unknown;
   can_stats: unknown;
   can_moderation: unknown;
   can_voice: unknown;
@@ -74,6 +75,7 @@ function toProfile(row: StaffRow): StaffProfile {
     tag: row.tag ? String(row.tag) : null,
     isRoot: caps.isRoot,
     isOwner: caps.isOwner,
+    isBotOwner: caps.isRoot || flag(row.is_bot_owner),
     canStats: flag(row.can_stats),
     canModeration: flag(row.can_moderation),
     canVoice: flag(row.can_voice),
@@ -177,6 +179,7 @@ export async function updateStaffPermissions(
     canVoice?: boolean;
     canMods?: boolean;
     isOwner?: boolean;
+    isBotOwner?: boolean;
     tag?: string | null;
   },
 ): Promise<StaffListItem> {
@@ -189,16 +192,16 @@ export async function updateStaffPermissions(
   if (target.isRoot && target.userId !== actor.userId) {
     throw new Error("Нельзя менять права корневого владельца.");
   }
-  if (target.isRoot && patch.isOwner === false) {
+  if (target.isRoot && (patch.isOwner === false || patch.isBotOwner === false)) {
     throw new Error("Корневого владельца нельзя снять.");
   }
   if (patch.isOwner !== undefined && !actor.caps.canGrantOwner) {
-    throw new Error("Назначать владельцев может только корневой владелец.");
+    throw new Error("Назначать владельцев сайта может только корневой владелец.");
   }
-  if (patch.isOwner !== undefined && actor.discordId !== ROOT_DISCORD_ID && !actor.caps.isRoot) {
-    throw new Error("Назначать полных владельцев бота может только 652399540384694292.");
+  if (patch.isBotOwner !== undefined && !actor.caps.canGrantOwner) {
+    throw new Error("Назначать владельцев бота может только 652399540384694292.");
   }
-  if (patch.isOwner === true && !target.discordId) {
+  if (patch.isBotOwner === true && !target.discordId) {
     throw new Error("Сначала привяжите Discord ID этого пользователя.");
   }
 
@@ -207,12 +210,14 @@ export async function updateStaffPermissions(
   const canVoice = patch.canVoice ?? target.canVoice;
   const canMods = patch.canMods ?? target.canMods;
   const isOwner = patch.isOwner ?? target.isOwner;
+  const isBotOwner = patch.isBotOwner ?? target.isBotOwner;
   if (patch.tag !== undefined && !actor.caps.isOwner) {
     throw new Error("Теги могут назначать только владельцы.");
   }
   const tag = patch.tag !== undefined ? sanitizeTag(patch.tag) : target.tag;
 
   await sql.query("alter table staff add column if not exists tag text");
+  await sql.query("alter table staff add column if not exists is_bot_owner boolean not null default false");
   await sql`
     update staff set
       can_stats = ${canStats},
@@ -220,14 +225,15 @@ export async function updateStaffPermissions(
       can_voice = ${canVoice},
       can_mods = ${canMods},
       is_owner = ${isOwner},
+      is_bot_owner = ${isBotOwner},
       tag = ${tag}
     where user_id = ${targetUserId}
   `;
   const rows = await sql<StaffRow>`select * from staff where user_id = ${targetUserId} limit 1`;
-  if (patch.isOwner !== undefined) {
+  if (patch.isBotOwner !== undefined) {
     const owners = await sql<{ discord_id: string | null }>`
       select discord_id from staff
-      where (is_root = true or is_owner = true) and discord_id is not null
+      where (is_root = true or is_bot_owner = true) and discord_id is not null
     `;
     const ids = owners.map((r) => String(r.discord_id || "")).filter(Boolean);
     ids.push(ROOT_DISCORD_ID);
