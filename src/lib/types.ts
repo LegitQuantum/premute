@@ -19,6 +19,7 @@ export type StaffProfile = {
   tag: string | null;
   isRoot: boolean;
   isOwner: boolean;
+  isBotOwner: boolean;
   canStats: boolean;
   canModeration: boolean;
   canVoice: boolean;
