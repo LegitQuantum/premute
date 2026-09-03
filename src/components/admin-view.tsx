@@ -12,6 +12,7 @@ import type { StaffListItem, StaffProfile } from "@/lib/types";
 export function AdminView({ me }: { me: StaffProfile }) {
   const [rows, setRows] = useState<StaffListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const meIsMainOwner = me.userId === ROOT_DISCORD_ID || me.discordId === ROOT_DISCORD_ID;
 
   async function load() {
     setLoading(true);
@@ -75,11 +76,11 @@ export function AdminView({ me }: { me: StaffProfile }) {
         <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Доступ к вкладкам</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">
           Выдавайте статистику, модерирование, озвучивание, теги у аватарки и управление составом модераторов.
-          {me.caps.canToggleOwnership
-            ? " «Владелец» (красный) — команды Discord и все вкладки сайта. Нажатие переключает его в «Корневого владельца» и обратно."
+          {me.caps.canGrantBotOwner
+            ? " «Владелец» (красный) — команды Discord. Нажатие по нему переключает в «Корневого владельца» и обратно. Назначать владельцев бота может корневой владелец."
             : me.caps.canGrantOwner
-              ? " «Владелец сайта» — все вкладки сайта. Назначать корневых владельцев может только корневой владелец."
-              : " Назначать владельцев может только корневой владелец или владелец бота."}
+              ? " «Владелец сайта» — все вкладки сайта и выдача вкладок другим. Назначать владельцев бота и сайта может только корневой владелец."
+              : " Назначать владельцев сайта и бота может только корневой владелец."}
         </p>
       </header>
 
@@ -106,12 +107,8 @@ export function AdminView({ me }: { me: StaffProfile }) {
                         {u.isRoot ? (
                           <OwnershipBadge
                             tone="gold"
-                            canClick={me.caps.canToggleOwnership && !isMainOwner(u)}
-                            title={
-                              me.caps.canToggleOwnership && !isMainOwner(u)
-                                ? "Понизить до «Владельца»"
-                                : "Корневой владелец"
-                            }
+                            canClick={meIsMainOwner && !isMainOwner(u)}
+                            title={meIsMainOwner && !isMainOwner(u) ? "Понизить до «Владельца»" : "Корневой владелец"}
                             onClick={() => toggleOwnership(u)}
                           >
                             <Shield className="mr-1 size-3" />
@@ -120,19 +117,14 @@ export function AdminView({ me }: { me: StaffProfile }) {
                         ) : u.isBotOwner ? (
                           <OwnershipBadge
                             tone="danger"
-                            canClick={me.caps.canToggleOwnership}
-                            title={
-                              me.caps.canToggleOwnership
-                                ? "Назначить «Корневым владельцем»"
-                                : "Владелец"
-                            }
+                            canClick={meIsMainOwner}
+                            title={meIsMainOwner ? "Назначить «Корневым владельцем»" : "Владелец"}
                             onClick={() => toggleOwnership(u)}
                           >
                             Владелец
                           </OwnershipBadge>
-                        ) : u.isOwner ? (
-                          <Badge tone="accent">владелец сайта</Badge>
                         ) : null}
+                        {u.isOwner && !u.isRoot ? <Badge tone="accent">владелец сайта</Badge> : null}
                         {u.tag ? <Badge>{u.tag}</Badge> : null}
                       </div>
                       <p className="text-xs text-subtle">
@@ -151,28 +143,36 @@ export function AdminView({ me }: { me: StaffProfile }) {
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
                     <Toggle
                       label="Статистика"
-                      checked={u.isOwner || u.isBotOwner || u.canStats}
-                      disabled={locked || u.isOwner || u.isBotOwner}
+                      checked={u.isOwner || u.canStats}
+                      disabled={locked || u.isOwner}
                       onChange={(v) => void patch(u.userId, { ...u, canStats: v })}
                     />
                     <Toggle
                       label="Модерация"
-                      checked={u.isOwner || u.isBotOwner || u.canModeration}
-                      disabled={locked || u.isOwner || u.isBotOwner}
+                      checked={u.isOwner || u.canModeration}
+                      disabled={locked || u.isOwner}
                       onChange={(v) => void patch(u.userId, { ...u, canModeration: v })}
                     />
                     <Toggle
                       label="Озвучка"
-                      checked={u.isOwner || u.isBotOwner || u.canVoice}
-                      disabled={locked || u.isOwner || u.isBotOwner}
+                      checked={u.isOwner || u.canVoice}
+                      disabled={locked || u.isOwner}
                       onChange={(v) => void patch(u.userId, { ...u, canVoice: v })}
                     />
                     <Toggle
                       label="Модераторы"
-                      checked={u.isOwner || u.isBotOwner || u.canMods}
-                      disabled={locked || u.isOwner || u.isBotOwner}
+                      checked={u.isOwner || u.canMods}
+                      disabled={locked || u.isOwner}
                       onChange={(v) => void patch(u.userId, { ...u, canMods: v })}
                     />
+                    {me.caps.canGrantBotOwner ? (
+                      <Toggle
+                        label="Владелец бота"
+                        checked={u.isRoot || u.isBotOwner}
+                        disabled={locked || u.isRoot}
+                        onChange={(v) => void patch(u.userId, { ...u, isBotOwner: v })}
+                      />
+                    ) : null}
                     {me.caps.canGrantOwner ? (
                       <Toggle
                         label="Владелец сайта"
