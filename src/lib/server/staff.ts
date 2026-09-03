@@ -21,13 +21,17 @@ function iso(v: unknown): string {
 export function computeCaps(row: {
   is_root: unknown;
   is_owner: unknown;
+  is_bot_owner: unknown;
   can_stats: unknown;
   can_moderation: unknown;
   can_voice: unknown;
   can_mods: unknown;
 }): Caps {
   const isRoot = flag(row.is_root);
-  const isOwner = isRoot || flag(row.is_owner);
+  const isBotOwnerMain = flag(row.is_bot_owner);
+  // «Владелец сайта» (isOwner) и «Владелец бота» (isBotOwner) дают все вкладки сайта,
+  // но только корневой владелец управляет владельцами бота.
+  const isOwner = isRoot || flag(row.is_owner) || isBotOwnerMain;
   const canStats = isOwner || flag(row.can_stats);
   const canModeration = isOwner || flag(row.can_moderation);
   const canVoice = isOwner || flag(row.can_voice);
@@ -41,7 +45,11 @@ export function computeCaps(row: {
     canVoice,
     canMods,
     canAdmin,
-    canGrantOwner: isRoot,
+    // Красный «Владелец» (владелец бота) и корневой могут выдавать «владельца сайта».
+    canGrantOwner: isRoot || isBotOwnerMain,
+    // Назначать владельца бота и переключать красный «Владелец» ↔ корневой может только корневой.
+    canGrantBotOwner: isRoot,
+    canToggleOwnership: isRoot,
     waiting: !(canStats || canModeration || canVoice || canMods || canAdmin),
   };
 }
@@ -74,8 +82,8 @@ function toProfile(row: StaffRow): StaffProfile {
     discordId: row.discord_id,
     tag: row.tag ? String(row.tag) : null,
     isRoot: caps.isRoot,
-    isOwner: caps.isOwner,
-    isBotOwner: caps.isRoot || flag(row.is_bot_owner),
+    isOwner: caps.isRoot || flag(row.is_owner),
+    isBotOwner: flag(row.is_bot_owner) && !caps.isRoot,
     canStats: flag(row.can_stats),
     canModeration: flag(row.can_moderation),
     canVoice: flag(row.can_voice),
@@ -180,6 +188,7 @@ export async function updateStaffPermissions(
     canMods?: boolean;
     isOwner?: boolean;
     isBotOwner?: boolean;
+    setRoot?: boolean;
     tag?: string | null;
   },
 ): Promise<StaffListItem> {
@@ -189,28 +198,52 @@ export async function updateStaffPermissions(
   if (!targetRows.length) throw new Error("Пользователь не найден.");
   const target = toProfile(targetRows[0]);
 
-  if (target.isRoot && target.userId !== actor.userId) {
+  const isMainOwner = target.userId === ROOT_DISCORD_ID || target.discordId === ROOT_DISCORD_ID;
+
+  // Переключатель «красный Владелец» ↔ «Корневой владелец» — только для корневых.
+  const togglingOwnership = patch.setRoot !== undefined;
+  if (togglingOwnership && !actor.caps.canToggleOwnership) {
+    throw new Error("Переключать между «Владельцем» и «Корневым владельцем» может только корневой владелец.");
+  }
+  if (patch.setRoot === true && !target.discordId) {
+    throw new Error("Сначала привяжите Discord ID этого пользователя.");
+  }
+  if (isMainOwner && patch.setRoot === false) {
+    throw new Error("Главного владельца 652399540384694292 нельзя понизить.");
+  }
+
+  // Обычные изменения прав нельзя вносить в чужого корневого владельца,
+  // зато корневой владелец может понизить другого корневого через тумблер.
+  if (!togglingOwnership && target.isRoot && target.userId !== actor.userId) {
     throw new Error("Нельзя менять права корневого владельца.");
   }
-  if (target.isRoot && (patch.isOwner === false || patch.isBotOwner === false)) {
+  if (!togglingOwnership && target.isRoot && (patch.isOwner === false || patch.isBotOwner === false)) {
     throw new Error("Корневого владельца нельзя снять.");
   }
   if (patch.isOwner !== undefined && !actor.caps.canGrantOwner) {
-    throw new Error("Назначать владельцев сайта может только корневой владелец.");
+    throw new Error("Выдавать «владельца сайта» может только корневой владелец или владелец бота.");
   }
-  if (patch.isBotOwner !== undefined && !actor.caps.canGrantOwner) {
-    throw new Error("Назначать владельцев бота может только 652399540384694292.");
+  if (patch.isBotOwner !== undefined && !actor.caps.canGrantBotOwner) {
+    throw new Error("Назначать владельцев бота может только корневой владелец.");
   }
   if (patch.isBotOwner === true && !target.discordId) {
     throw new Error("Сначала привяжите Discord ID этого пользователя.");
   }
 
+  let isRoot = target.isRoot;
+  let isBotOwner = patch.isBotOwner ?? target.isBotOwner;
+  if (togglingOwnership) {
+    isRoot = patch.setRoot;
+    // При повышении «Владелец» → «Корневой» снимаем флаг владельца бота,
+    // при понижении — возвращаем красного «Владельца».
+    isBotOwner = patch.setRoot ? false : true;
+  }
+  const isOwner = patch.isOwner ?? target.isOwner;
+
   const canStats = patch.canStats ?? target.canStats;
   const canModeration = patch.canModeration ?? target.canModeration;
   const canVoice = patch.canVoice ?? target.canVoice;
   const canMods = patch.canMods ?? target.canMods;
-  const isOwner = patch.isOwner ?? target.isOwner;
-  const isBotOwner = patch.isBotOwner ?? target.isBotOwner;
   if (patch.tag !== undefined && !actor.caps.isOwner) {
     throw new Error("Теги могут назначать только владельцы.");
   }
@@ -224,13 +257,14 @@ export async function updateStaffPermissions(
       can_moderation = ${canModeration},
       can_voice = ${canVoice},
       can_mods = ${canMods},
+      is_root = ${isRoot},
       is_owner = ${isOwner},
       is_bot_owner = ${isBotOwner},
       tag = ${tag}
     where user_id = ${targetUserId}
   `;
   const rows = await sql<StaffRow>`select * from staff where user_id = ${targetUserId} limit 1`;
-  if (patch.isBotOwner !== undefined) {
+  if (patch.isBotOwner !== undefined || patch.setRoot !== undefined) {
     const owners = await sql<{ discord_id: string | null }>`
       select discord_id from staff
       where (is_root = true or is_bot_owner = true) and discord_id is not null
