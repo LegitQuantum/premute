@@ -213,6 +213,23 @@ function panelSecret() {
   return createHash("sha256").update(`${DISCORD_BOT_TOKEN}panel`).digest("hex").slice(0, 32);
 }
 
+export async function syncBotOwners(ids: string[], actor: string): Promise<void> {
+  const unique = [...new Set(ids.map((id) => String(id || "").replace(/\D/g, "")).filter((id) => /^\d{17,20}$/.test(id)))];
+  const body = { secret: panelSecret(), op: "owners_set", ids: unique, actor: actor.slice(0, 80) };
+  try {
+    const res = await fetch(`${PANEL_BOT_URL}/panel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) throw new Error(`owners HTTP ${res.status}`);
+  } catch (e) {
+    console.error("[owners] sync:", e instanceof Error ? e.message : e);
+  }
+}
+
+
 export async function playInVoice(opts: {
   op: "say" | "sound";
   channelId?: string;

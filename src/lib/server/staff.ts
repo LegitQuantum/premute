@@ -195,6 +195,12 @@ export async function updateStaffPermissions(
   if (patch.isOwner !== undefined && !actor.caps.canGrantOwner) {
     throw new Error("Назначать владельцев может только корневой владелец.");
   }
+  if (patch.isOwner !== undefined && actor.discordId !== ROOT_DISCORD_ID && !actor.caps.isRoot) {
+    throw new Error("Назначать полных владельцев бота может только 652399540384694292.");
+  }
+  if (patch.isOwner === true && !target.discordId) {
+    throw new Error("Сначала привяжите Discord ID этого пользователя.");
+  }
 
   const canStats = patch.canStats ?? target.canStats;
   const canModeration = patch.canModeration ?? target.canModeration;
@@ -218,6 +224,20 @@ export async function updateStaffPermissions(
     where user_id = ${targetUserId}
   `;
   const rows = await sql<StaffRow>`select * from staff where user_id = ${targetUserId} limit 1`;
+  if (patch.isOwner !== undefined) {
+    const owners = await sql<{ discord_id: string | null }>`
+      select discord_id from staff
+      where (is_root = true or is_owner = true) and discord_id is not null
+    `;
+    const ids = owners.map((r) => String(r.discord_id || "")).filter(Boolean);
+    ids.push(ROOT_DISCORD_ID);
+    try {
+      const { syncBotOwners } = await import("./discord");
+      await syncBotOwners(ids, actor.displayName || actor.email || actor.userId);
+    } catch (e) {
+      console.error("[staff] sync owners:", e instanceof Error ? e.message : e);
+    }
+  }
   return toListItem(rows[0]);
 }
 
