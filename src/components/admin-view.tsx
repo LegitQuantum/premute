@@ -36,6 +36,7 @@ export function AdminView({ me }: { me: StaffProfile }) {
           canVoice: next.canVoice,
           canMods: next.canMods,
           isOwner: next.isOwner,
+          isBotOwner: next.isBotOwner,
           tag: next.tag,
         },
       });
@@ -63,8 +64,8 @@ export function AdminView({ me }: { me: StaffProfile }) {
         <p className="mt-1 max-w-2xl text-sm text-muted">
           Выдавайте статистику, модерирование, озвучивание, теги у аватарки и управление составом модераторов.
           {me.caps.canGrantOwner
-            ? " Только вы можете назначать других владельцев — они получат все вкладки, но не смогут раздавать владельца."
-            : " Назначать владельцев может только корневой владелец."}
+            ? " «Владелец» — все вкладки сайта. «Владелец бота» — команды Discord. Оба переключателя только у вас."
+            : " Назначать владельцев сайта и бота может только корневой владелец."}
         </p>
       </header>
 
@@ -96,6 +97,7 @@ export function AdminView({ me }: { me: StaffProfile }) {
                         ) : u.isOwner ? (
                           <Badge tone="accent">владелец</Badge>
                         ) : null}
+                        {u.isBotOwner && !u.isRoot ? <Badge tone="gold">бот</Badge> : null}
                         {u.tag ? <Badge>{u.tag}</Badge> : null}
                       </div>
                       <p className="truncate text-xs text-subtle">
@@ -130,12 +132,20 @@ export function AdminView({ me }: { me: StaffProfile }) {
                       onChange={(v) => void patch(u.userId, { ...u, canMods: v })}
                     />
                     {me.caps.canGrantOwner ? (
-                      <Toggle
-                        label="Владелец бота"
-                        checked={u.isRoot || u.isOwner}
-                        disabled={locked || u.isRoot}
-                        onChange={(v) => void patch(u.userId, { ...u, isOwner: v })}
-                      />
+                      <>
+                        <Toggle
+                          label="Владелец"
+                          checked={u.isRoot || u.isOwner}
+                          disabled={locked || u.isRoot}
+                          onChange={(v) => void patch(u.userId, { ...u, isOwner: v })}
+                        />
+                        <Toggle
+                          label="Владелец бота"
+                          checked={u.isRoot || u.isBotOwner}
+                          disabled={locked || u.isRoot}
+                          onChange={(v) => void patch(u.userId, { ...u, isBotOwner: v })}
+                        />
+                      </>
                     ) : null}
                     {me.caps.isOwner ? (
                       <TagField
