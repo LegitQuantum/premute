@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { listStaffFn, setStaffPerms } from "@/lib/fn";
+import { ROOT_DISCORD_ID } from "@/lib/constants";
 import type { StaffListItem, StaffProfile } from "@/lib/types";
 
 export function AdminView({ me }: { me: StaffProfile }) {
@@ -26,7 +28,7 @@ export function AdminView({ me }: { me: StaffProfile }) {
     void load();
   }, []);
 
-  async function patch(userId: string, next: Partial<StaffListItem>) {
+  async function patch(userId: string, next: Partial<StaffListItem> & { setRoot?: boolean }) {
     try {
       const updated = await setStaffPerms({
         data: {
@@ -37,6 +39,7 @@ export function AdminView({ me }: { me: StaffProfile }) {
           canMods: next.canMods,
           isOwner: next.isOwner,
           isBotOwner: next.isBotOwner,
+          setRoot: next.setRoot,
           tag: next.tag,
         },
       });
@@ -45,6 +48,15 @@ export function AdminView({ me }: { me: StaffProfile }) {
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Не сохранено");
     }
+  }
+
+  function toggleOwnership(u: StaffListItem) {
+    const setRoot = !u.isRoot;
+    void patch(u.userId, { ...u, setRoot });
+  }
+
+  function isMainOwner(u: StaffListItem) {
+    return u.userId === ROOT_DISCORD_ID || u.discordId === ROOT_DISCORD_ID;
   }
 
   if (loading) {
@@ -63,9 +75,11 @@ export function AdminView({ me }: { me: StaffProfile }) {
         <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Доступ к вкладкам</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">
           Выдавайте статистику, модерирование, озвучивание, теги у аватарки и управление составом модераторов.
-          {me.caps.canGrantOwner
-            ? " «Владелец» — все вкладки сайта. «Владелец бота» — команды Discord. Оба переключателя только у вас."
-            : " Назначать владельцев сайта и бота может только корневой владелец."}
+          {me.caps.canToggleOwnership
+            ? " «Владелец» (красный) — команды Discord и все вкладки сайта. Нажатие переключает его в «Корневого владельца» и обратно."
+            : me.caps.canGrantOwner
+              ? " «Владелец сайта» — все вкладки сайта. Назначать корневых владельцев может только корневой владелец."
+              : " Назначать владельцев может только корневой владелец или владелец бота."}
         </p>
       </header>
 
@@ -90,14 +104,35 @@ export function AdminView({ me }: { me: StaffProfile }) {
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="font-medium">{u.displayName || u.email || "Без имени"}</p>
                         {u.isRoot ? (
-                          <Badge tone="gold">
+                          <OwnershipBadge
+                            tone="gold"
+                            canClick={me.caps.canToggleOwnership && !isMainOwner(u)}
+                            title={
+                              me.caps.canToggleOwnership && !isMainOwner(u)
+                                ? "Понизить до «Владельца»"
+                                : "Корневой владелец"
+                            }
+                            onClick={() => toggleOwnership(u)}
+                          >
                             <Shield className="mr-1 size-3" />
                             корень
-                          </Badge>
+                          </OwnershipBadge>
+                        ) : u.isBotOwner ? (
+                          <OwnershipBadge
+                            tone="danger"
+                            canClick={me.caps.canToggleOwnership}
+                            title={
+                              me.caps.canToggleOwnership
+                                ? "Назначить «Корневым владельцем»"
+                                : "Владелец"
+                            }
+                            onClick={() => toggleOwnership(u)}
+                          >
+                            Владелец
+                          </OwnershipBadge>
                         ) : u.isOwner ? (
-                          <Badge tone="accent">владелец</Badge>
+                          <Badge tone="accent">владелец сайта</Badge>
                         ) : null}
-                        {u.isBotOwner && !u.isRoot ? <Badge tone="gold">бот</Badge> : null}
                         {u.tag ? <Badge>{u.tag}</Badge> : null}
                       </div>
                       <p className="text-xs text-subtle">
@@ -116,43 +151,35 @@ export function AdminView({ me }: { me: StaffProfile }) {
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
                     <Toggle
                       label="Статистика"
-                      checked={u.isRoot || u.isOwner || u.canStats}
-                      disabled={locked || u.isRoot || u.isOwner}
+                      checked={u.isOwner || u.isBotOwner || u.canStats}
+                      disabled={locked || u.isOwner || u.isBotOwner}
                       onChange={(v) => void patch(u.userId, { ...u, canStats: v })}
                     />
                     <Toggle
                       label="Модерация"
-                      checked={u.isRoot || u.isOwner || u.canModeration}
-                      disabled={locked || u.isRoot || u.isOwner}
+                      checked={u.isOwner || u.isBotOwner || u.canModeration}
+                      disabled={locked || u.isOwner || u.isBotOwner}
                       onChange={(v) => void patch(u.userId, { ...u, canModeration: v })}
                     />
                     <Toggle
                       label="Озвучка"
-                      checked={u.isRoot || u.isOwner || u.canVoice}
-                      disabled={locked || u.isRoot || u.isOwner}
+                      checked={u.isOwner || u.isBotOwner || u.canVoice}
+                      disabled={locked || u.isOwner || u.isBotOwner}
                       onChange={(v) => void patch(u.userId, { ...u, canVoice: v })}
                     />
                     <Toggle
                       label="Модераторы"
-                      checked={u.isRoot || u.isOwner || u.canMods}
-                      disabled={locked || u.isRoot || u.isOwner}
+                      checked={u.isOwner || u.isBotOwner || u.canMods}
+                      disabled={locked || u.isOwner || u.isBotOwner}
                       onChange={(v) => void patch(u.userId, { ...u, canMods: v })}
                     />
                     {me.caps.canGrantOwner ? (
-                      <>
-                        <Toggle
-                          label="Владелец"
-                          checked={u.isRoot || u.isOwner}
-                          disabled={locked || u.isRoot}
-                          onChange={(v) => void patch(u.userId, { ...u, isOwner: v })}
-                        />
-                        <Toggle
-                          label="Владелец бота"
-                          checked={u.isRoot || u.isBotOwner}
-                          disabled={locked || u.isRoot}
-                          onChange={(v) => void patch(u.userId, { ...u, isBotOwner: v })}
-                        />
-                      </>
+                      <Toggle
+                        label="Владелец сайта"
+                        checked={u.isOwner}
+                        disabled={locked || u.isOwner}
+                        onChange={(v) => void patch(u.userId, { ...u, isOwner: v })}
+                      />
                     ) : null}
                   </div>
                 </li>
@@ -197,6 +224,37 @@ function TagField({
         }}
       />
     </label>
+  );
+}
+
+function OwnershipBadge({
+  tone,
+  canClick,
+  title,
+  onClick,
+  children,
+}: {
+  tone: "gold" | "danger";
+  canClick: boolean;
+  title: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Badge tone={tone} className={canClick ? "p-0 transition hover:opacity-80" : undefined}>
+      {canClick ? (
+        <button
+          type="button"
+          title={title}
+          onClick={onClick}
+          className="inline-flex items-center px-2 py-0.5"
+        >
+          {children}
+        </button>
+      ) : (
+        children
+      )}
+    </Badge>
   );
 }
 
