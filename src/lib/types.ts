@@ -8,7 +8,6 @@ export type Caps = {
   canAdmin: boolean;
   canGrantOwner: boolean;
   canGrantBotOwner: boolean;
-  canToggleOwnership: boolean;
   waiting: boolean;
 };
 
