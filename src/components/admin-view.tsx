@@ -57,7 +57,7 @@ export function AdminView({ me }: { me: StaffProfile }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:py-10">
+    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
       <header className="mb-8">
         <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-accent">Админ панель</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Доступ к вкладкам</h1>
@@ -77,18 +77,18 @@ export function AdminView({ me }: { me: StaffProfile }) {
             {rows.map((u) => {
               const locked = u.isRoot && u.userId !== me.userId;
               return (
-                <li key={u.userId} className="grid gap-4 px-4 py-4 sm:grid-cols-[1fr_auto] sm:items-center sm:px-5">
-                  <div className="flex min-w-0 items-center gap-3">
+                <li key={u.userId} className="flex flex-col gap-4 px-4 py-4 sm:px-5">
+                  <div className="flex items-center gap-3">
                     {u.image ? (
-                      <img src={u.image} alt="" className="size-10 rounded-full object-cover" />
+                      <img src={u.image} alt="" className="size-10 shrink-0 rounded-full object-cover" />
                     ) : (
-                      <span className="grid size-10 place-items-center rounded-full bg-elevated text-sm font-medium">
+                      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-elevated text-sm font-medium">
                         {(u.displayName || u.email || "?").charAt(0).toUpperCase()}
                       </span>
                     )}
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate font-medium">{u.displayName || u.email || "Без имени"}</p>
+                        <p className="font-medium">{u.displayName || u.email || "Без имени"}</p>
                         {u.isRoot ? (
                           <Badge tone="gold">
                             <Shield className="mr-1 size-3" />
@@ -100,13 +100,20 @@ export function AdminView({ me }: { me: StaffProfile }) {
                         {u.isBotOwner && !u.isRoot ? <Badge tone="gold">бот</Badge> : null}
                         {u.tag ? <Badge>{u.tag}</Badge> : null}
                       </div>
-                      <p className="truncate text-xs text-subtle">
+                      <p className="text-xs text-subtle">
                         {u.email || "—"}
                         {u.discordId ? ` · Discord ${u.discordId}` : " · Discord не привязан"}
                       </p>
                     </div>
+                    {me.caps.isOwner ? (
+                      <TagField
+                        value={u.tag}
+                        disabled={locked}
+                        onSave={(tag) => void patch(u.userId, { ...u, tag })}
+                      />
+                    ) : null}
                   </div>
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
                     <Toggle
                       label="Статистика"
                       checked={u.isRoot || u.isOwner || u.canStats}
@@ -146,13 +153,6 @@ export function AdminView({ me }: { me: StaffProfile }) {
                           onChange={(v) => void patch(u.userId, { ...u, isBotOwner: v })}
                         />
                       </>
-                    ) : null}
-                    {me.caps.isOwner ? (
-                      <TagField
-                        value={u.tag}
-                        disabled={locked}
-                        onSave={(tag) => void patch(u.userId, { ...u, tag })}
-                      />
                     ) : null}
                   </div>
                 </li>
