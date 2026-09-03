@@ -56,6 +56,7 @@ export const setStaffPerms = createServerFn({ method: "POST" })
       canMods?: boolean;
       isOwner?: boolean;
       isBotOwner?: boolean;
+      setRoot?: boolean;
       tag?: string | null;
     }) => d,
   )
@@ -70,6 +71,7 @@ export const setStaffPerms = createServerFn({ method: "POST" })
       canMods: data.canMods,
       isOwner: data.isOwner,
       isBotOwner: data.isBotOwner,
+      setRoot: data.setRoot,
       tag: data.tag,
     });
     await writeLog(context.userId, "set_perms", JSON.stringify(data));
