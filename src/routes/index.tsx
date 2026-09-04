@@ -12,6 +12,8 @@ import { StatsView } from "@/components/stats-view";
 import { TopsView } from "@/components/tops-view";
 import { ModerationView } from "@/components/moderation-view";
 import { VoiceView } from "@/components/voice-view";
+import { LogsView } from "@/components/logs-view";
+import { PowerView } from "@/components/power-view";
 import { AdminView } from "@/components/admin-view";
 import { ModsView } from "@/components/mods-view";
 
@@ -85,6 +87,10 @@ function Home() {
           <ModerationView />
         ) : tab === "voice" && profile.caps.canVoice ? (
           <VoiceView />
+        ) : tab === "logs" && profile.caps.canLogs ? (
+          <LogsView />
+        ) : tab === "power" && profile.caps.canPower ? (
+          <PowerView />
         ) : tab === "mods" && profile.caps.canMods ? (
           <ModsView />
         ) : tab === "admin" && profile.caps.canAdmin ? (
