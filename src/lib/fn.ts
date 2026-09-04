@@ -3,11 +3,11 @@ import { authMiddleware } from "@/lib/auth/middleware";
 import type {
   DiscordClaim,
   GuildMember,
+  LogEntry,
   RosterPayload,
   StaffListItem,
   StaffProfile,
   StatsPayload,
-  VoiceChannel,
 } from "@/lib/types";
 
 export const getMe = createServerFn({ method: "POST" })
@@ -54,6 +54,8 @@ export const setStaffPerms = createServerFn({ method: "POST" })
       canModeration?: boolean;
       canVoice?: boolean;
       canMods?: boolean;
+      canLogs?: boolean;
+      canPower?: boolean;
       isOwner?: boolean;
       isBotOwner?: boolean;
       setRoot?: boolean;
@@ -69,6 +71,8 @@ export const setStaffPerms = createServerFn({ method: "POST" })
       canModeration: data.canModeration,
       canVoice: data.canVoice,
       canMods: data.canMods,
+      canLogs: data.canLogs,
+      canPower: data.canPower,
       isOwner: data.isOwner,
       isBotOwner: data.isBotOwner,
       setRoot: data.setRoot,
@@ -146,14 +150,30 @@ export const moderateFn = createServerFn({ method: "POST" })
     return { ok: true, message: labels[data.action] };
   });
 
-export const listVoiceFn = createServerFn({ method: "GET" })
+export const getLogsFn = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
-  .handler(async ({ context }): Promise<VoiceChannel[]> => {
+  .handler(async ({ context }): Promise<LogEntry[]> => {
     const { getStaff } = await import("./server/staff");
     const me = await getStaff(context.userId);
-    if (!me?.caps.canVoice) throw new Error("Нет доступа к озвучиванию.");
-    const { listVoiceChannels } = await import("./server/discord");
-    return listVoiceChannels();
+    if (!me?.caps.canLogs) throw new Error("Нет доступа к логам.");
+    const { fetchBotLogs } = await import("./server/discord");
+    const rows = await fetchBotLogs();
+    if (!rows) throw new Error("Бот недоступен — логи временно не получить.");
+    return rows.map((r) => ({ ts: r.ts, text: r.text }));
+  });
+
+export const botPowerFn = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: { action: "restart" | "shutdown" }) => d)
+  .handler(async ({ context, data }): Promise<{ ok: true }> => {
+    const { getStaff, writeLog } = await import("./server/staff");
+    const me = await getStaff(context.userId);
+    if (!me?.caps.canPower) throw new Error("Нет доступа к управлению питанием.");
+    const actor = me.displayName || me.email || context.userId;
+    const { botPower } = await import("./server/discord");
+    await botPower(data.action, actor);
+    await writeLog(context.userId, "power", data.action);
+    return { ok: true };
   });
 
 export const playSoundFn = createServerFn({ method: "POST" })

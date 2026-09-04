@@ -5,6 +5,8 @@ export type Caps = {
   canModeration: boolean;
   canVoice: boolean;
   canMods: boolean;
+  canLogs: boolean;
+  canPower: boolean;
   canAdmin: boolean;
   canGrantOwner: boolean;
   canGrantBotOwner: boolean;
@@ -25,6 +27,8 @@ export type StaffProfile = {
   canModeration: boolean;
   canVoice: boolean;
   canMods: boolean;
+  canLogs: boolean;
+  canPower: boolean;
   createdAt: string;
   lastSeen: string;
   caps: Caps;
@@ -110,4 +114,9 @@ export type DiscordClaim = {
   discordId: string;
   status: "pending" | "accepted" | "declined" | "error";
   error?: string | null;
+};
+
+export type LogEntry = {
+  ts: number;
+  text: string;
 };
