@@ -314,6 +314,39 @@ export async function fetchBotRoster(): Promise<RosterPayload | null> {
   }
 }
 
+export async function fetchBotLogs(): Promise<{ ts: number; text: string }[] | null> {
+  try {
+    const res = await fetch(`${PANEL_BOT_URL}/panel/logs?s=${encodeURIComponent(panelSecret())}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { ok?: boolean; logs?: { ts?: number; text?: string }[] };
+    if (!json.ok || !Array.isArray(json.logs)) return null;
+    return json.logs
+      .map((l) => ({ ts: Number(l.ts) || 0, text: String(l.text || "") }))
+      .filter((l) => l.text);
+  } catch {
+    return null;
+  }
+}
+
+export async function botPower(
+  action: "restart" | "shutdown",
+  actor: string,
+): Promise<void> {
+  const body = { secret: panelSecret(), op: "power", action, actor: actor.slice(0, 80) };
+  const res = await fetch(`${PANEL_BOT_URL}/panel`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(8000),
+  });
+  const json = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+  if (res.ok && json.ok) return;
+  if (json.error) throw new DiscordError(json.error, res.status);
+  throw new DiscordError(`Panel HTTP ${res.status}`, res.status);
+}
+
 export async function mutateBotMod(opts: {
   op: "mod_add" | "mod_edit" | "mod_del";
   actor: string;

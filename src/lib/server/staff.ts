@@ -26,6 +26,8 @@ export function computeCaps(row: {
   can_moderation: unknown;
   can_voice: unknown;
   can_mods: unknown;
+  can_logs: unknown;
+  can_power: unknown;
 }): Caps {
   const isRoot = flag(row.is_root);
   // «Владелец сайта» — полный доступ к сайту. «Владелец бота» (красный) — команды Discord.
@@ -34,6 +36,8 @@ export function computeCaps(row: {
   const canModeration = isOwner || flag(row.can_moderation);
   const canVoice = isOwner || flag(row.can_voice);
   const canMods = isOwner || flag(row.can_mods);
+  const canLogs = isOwner || flag(row.can_logs);
+  const canPower = isOwner || flag(row.can_power);
   const canAdmin = isOwner;
   return {
     isRoot,
@@ -42,12 +46,14 @@ export function computeCaps(row: {
     canModeration,
     canVoice,
     canMods,
+    canLogs,
+    canPower,
     canAdmin,
     // Новых «владельцев сайта» может назначать только корневой владелец.
     canGrantOwner: isRoot,
     // Назначать/снимать «владельцев бота» может только корневой владелец.
     canGrantBotOwner: isRoot,
-    waiting: !(canStats || canModeration || canVoice || canMods || canAdmin),
+    waiting: !(canStats || canModeration || canVoice || canMods || canLogs || canPower || canAdmin),
   };
 }
 
@@ -64,6 +70,8 @@ type StaffRow = {
   can_moderation: unknown;
   can_voice: unknown;
   can_mods: unknown;
+  can_logs: unknown;
+  can_power: unknown;
   tag: string | null;
   created_at: unknown;
   last_seen: unknown;
@@ -85,6 +93,8 @@ function toProfile(row: StaffRow): StaffProfile {
     canModeration: flag(row.can_moderation),
     canVoice: flag(row.can_voice),
     canMods: flag(row.can_mods),
+    canLogs: flag(row.can_logs),
+    canPower: flag(row.can_power),
     createdAt: iso(row.created_at),
     lastSeen: iso(row.last_seen),
     caps,
@@ -165,7 +175,9 @@ export async function claimDiscordId(userId: string, discordId: string): Promise
           can_stats = true,
           can_moderation = true,
           can_voice = true,
-          can_mods = true
+          can_mods = true,
+          can_logs = true,
+          can_power = true
         where user_id = ${userId}
       `;
     }
@@ -183,6 +195,8 @@ export async function updateStaffPermissions(
     canModeration?: boolean;
     canVoice?: boolean;
     canMods?: boolean;
+    canLogs?: boolean;
+    canPower?: boolean;
     isOwner?: boolean;
     isBotOwner?: boolean;
     setRoot?: boolean;
@@ -231,10 +245,11 @@ export async function updateStaffPermissions(
   let isRoot = target.isRoot;
   let isBotOwner = patch.isBotOwner ?? target.isBotOwner;
   if (togglingOwnership) {
-    isRoot = patch.setRoot;
+    // Здесь patch.setRoot гарантированно задан (см. togglingOwnership выше).
+    isRoot = patch.setRoot === true;
     // При повышении «Владелец» → «Корневой» снимаем флаг владельца бота,
     // при понижении — возвращаем красного «Владельца».
-    isBotOwner = patch.setRoot ? false : true;
+    isBotOwner = !isRoot;
   }
   const isOwner = patch.isOwner ?? target.isOwner;
 
@@ -242,6 +257,8 @@ export async function updateStaffPermissions(
   const canModeration = patch.canModeration ?? target.canModeration;
   const canVoice = patch.canVoice ?? target.canVoice;
   const canMods = patch.canMods ?? target.canMods;
+  const canLogs = patch.canLogs ?? target.canLogs;
+  const canPower = patch.canPower ?? target.canPower;
   if (patch.tag !== undefined && !actor.caps.isOwner) {
     throw new Error("Теги могут назначать только владельцы.");
   }
@@ -249,12 +266,16 @@ export async function updateStaffPermissions(
 
   await sql.query("alter table staff add column if not exists tag text");
   await sql.query("alter table staff add column if not exists is_bot_owner boolean not null default false");
+  await sql.query("alter table staff add column if not exists can_logs boolean not null default false");
+  await sql.query("alter table staff add column if not exists can_power boolean not null default false");
   await sql`
     update staff set
       can_stats = ${canStats},
       can_moderation = ${canModeration},
       can_voice = ${canVoice},
       can_mods = ${canMods},
+      can_logs = ${canLogs},
+      can_power = ${canPower},
       is_root = ${isRoot},
       is_owner = ${isOwner},
       is_bot_owner = ${isBotOwner},
