@@ -1,7 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -38,6 +37,8 @@ export function AdminView({ me }: { me: StaffProfile }) {
           canModeration: next.canModeration,
           canVoice: next.canVoice,
           canMods: next.canMods,
+          canLogs: next.canLogs,
+          canPower: next.canPower,
           isOwner: next.isOwner,
           isBotOwner: next.isBotOwner,
           setRoot: next.setRoot,
@@ -75,7 +76,8 @@ export function AdminView({ me }: { me: StaffProfile }) {
         <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-accent">Админ панель</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Доступ к вкладкам</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">
-          Выдавайте статистику, модерирование, озвучивание, теги у аватарки и управление составом модераторов.
+          Выдавайте статистику, модерирование, озвучивание, логи, питание, теги у аватарки и
+          управление составом модераторов.
           {me.caps.canGrantBotOwner
             ? " «Владелец» (красный) — команды Discord. Нажатие по нему переключает в «Корневого владельца» и обратно. Назначать владельцев бота может корневой владелец."
             : me.caps.canGrantOwner
@@ -164,6 +166,18 @@ export function AdminView({ me }: { me: StaffProfile }) {
                       checked={u.isOwner || u.canMods}
                       disabled={locked || u.isOwner}
                       onChange={(v) => void patch(u.userId, { ...u, canMods: v })}
+                    />
+                    <Toggle
+                      label="Логи"
+                      checked={u.isOwner || u.canLogs}
+                      disabled={locked || u.isOwner}
+                      onChange={(v) => void patch(u.userId, { ...u, canLogs: v })}
+                    />
+                    <Toggle
+                      label="Питание"
+                      checked={u.isOwner || u.canPower}
+                      disabled={locked || u.isOwner}
+                      onChange={(v) => void patch(u.userId, { ...u, canPower: v })}
                     />
                     {me.caps.canGrantBotOwner ? (
                       <Toggle

@@ -1,11 +1,11 @@
 import { type ReactNode } from "react";
-import { BarChart3, Shield, ShieldCheck, Trophy, Users, Volume2 } from "lucide-react";
+import { BarChart3, Power, ScrollText, Shield, ShieldCheck, Trophy, Users, Volume2 } from "lucide-react";
 import { UserButton } from "@/lib/auth/gates";
 import { cn } from "@/lib/utils";
 import type { Caps } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 
-export type Tab = "home" | "stats" | "tops" | "moderation" | "voice" | "mods" | "admin";
+export type Tab = "home" | "stats" | "tops" | "moderation" | "voice" | "logs" | "power" | "mods" | "admin";
 
 export function PanelShell({
   caps,
@@ -25,6 +25,8 @@ export function PanelShell({
     { id: "tops", label: "Топы", icon: Trophy, show: caps.canStats },
     { id: "moderation", label: "Модер", icon: ShieldCheck, show: caps.canModeration },
     { id: "voice", label: "Голос", icon: Volume2, show: caps.canVoice },
+    { id: "logs", label: "Логи", icon: ScrollText, show: caps.canLogs },
+    { id: "power", label: "Питание", icon: Power, show: caps.canPower },
     { id: "mods", label: "Моды", icon: Users, show: caps.canMods },
     { id: "admin", label: "Админ", icon: Shield, show: caps.canAdmin },
   ];
@@ -96,7 +98,8 @@ export function HomeHero() {
         Приветствую в панели управления бота PremuteBOT
       </h1>
       <p className="mt-4 text-sm leading-relaxed text-muted">
-        Вкладки сверху — статистика модераторов FEAR, наказания на сервере и озвучка.
+        Вкладки сверху — статистика модераторов FEAR, наказания на сервере, озвучка, логи и
+        управление питанием бота.
       </p>
     </section>
   );
