@@ -188,9 +188,25 @@ export async function sendWarn(targetId: string, reason: string, actorTag: strin
   await sendLog(`⚠️ Предупреждение — ${actorTag} → ${targetTag}${reason ? ` • ${reason}` : ""}`);
 }
 
+// Дублируем лог панели в буфер бота, чтобы запись появилась во вкладке «Логи».
+// Ошибки игнорируем — буфер не критичен. Await обязателен: Vercel может
+// заморозить функцию сразу после ответа и fire-and-forget запрос не уйдёт.
+async function pushBotLog(text: string): Promise<void> {
+  try {
+    await fetch(`${PANEL_BOT_URL}/panel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret: panelSecret(), op: "log", text: text.slice(0, 1900) }),
+      signal: AbortSignal.timeout(5000),
+    });
+  } catch {
+    // буфер не критичен
+  }
+}
+
 export async function sendLog(text: string) {
   try {
-    await sendChannelMessage(DISCORD_LOG_CHANNEL_ID, text);
+    await Promise.all([pushBotLog(text), sendChannelMessage(DISCORD_LOG_CHANNEL_ID, text)]);
   } catch (e) {
     console.error("[discord] log:", e instanceof Error ? e.message : e);
   }
