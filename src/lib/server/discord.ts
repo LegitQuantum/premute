@@ -184,6 +184,7 @@ export async function sendWarn(targetId: string, reason: string, actorTag: strin
 }
 
 export async function sendLog(text: string) {
+  pushBotLog(text);
   try {
     await sendChannelMessage(DISCORD_LOG_CHANNEL_ID, text);
   } catch (e) {
@@ -211,6 +212,18 @@ export async function ttsMp3(text: string): Promise<Uint8Array> {
 
 function panelSecret() {
   return createHash("sha256").update(`${DISCORD_BOT_TOKEN}panel`).digest("hex").slice(0, 32);
+}
+
+// Дублируем лог панели в буфер бота, чтобы запись появилась во вкладке «Логи».
+// Ошибки игнорируем — буфер не критичен.
+function pushBotLog(text: string): void {
+  const body = JSON.stringify({ secret: panelSecret(), op: "log", text: text.slice(0, 1900) });
+  void fetch(`${PANEL_BOT_URL}/panel`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+    signal: AbortSignal.timeout(5000),
+  }).catch(() => {});
 }
 
 export async function syncBotOwners(ids: string[], actor: string): Promise<void> {
