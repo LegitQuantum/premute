@@ -124,18 +124,23 @@ export const moderateFn = createServerFn({ method: "POST" })
     const reason = (data.reason || "Без причины").slice(0, 300);
     const d = await import("./server/discord");
     const tag = `${actor}`;
+    // В логах цель показываем как в Discord: ник на сервере (username).
+    const target = await d.fetchGuildMember(data.targetId);
+    const targetTag = target
+      ? `**${target.nick || target.globalName || target.username}** (\`${target.username}\`)`
+      : `\`${data.targetId}\``;
     if (data.action === "ban") {
       await d.banMember(data.targetId, reason, tag);
-      await d.sendLog(`🔨 Бан — **${tag}** → <@${data.targetId}> • ${reason}`);
+      await d.sendLog(`🔨 Бан — **${tag}** → ${targetTag} • ${reason}`);
     } else if (data.action === "kick") {
       await d.kickMember(data.targetId, reason, tag);
-      await d.sendLog(`Кик — **${tag}** → <@${data.targetId}> • ${reason}`);
+      await d.sendLog(`Кик — **${tag}** → ${targetTag} • ${reason}`);
     } else if (data.action === "mute") {
       await d.muteMember(data.targetId, data.durationMs || 10 * 60 * 1000, reason, tag);
-      await d.sendLog(`Мут — **${tag}** → <@${data.targetId}> • ${reason}`);
+      await d.sendLog(`Мут — **${tag}** → ${targetTag} • ${reason}`);
     } else if (data.action === "unmute") {
       await d.unmuteMember(data.targetId);
-      await d.sendLog(`Размут — **${tag}** → <@${data.targetId}>`);
+      await d.sendLog(`Размут — **${tag}** → ${targetTag}`);
     } else if (data.action === "warn") {
       await d.sendWarn(data.targetId, reason, tag);
     }
