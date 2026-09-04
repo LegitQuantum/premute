@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,14 +22,13 @@ export function LogsView() {
   const [rows, setRows] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   async function load(silent = false) {
     if (silent) setRefreshing(true);
     else setLoading(true);
     try {
       const data = await getLogsFn();
-      setRows(data);
+      setRows([...data].reverse());
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Не удалось загрузить логи");
     } finally {
@@ -43,10 +42,6 @@ export function LogsView() {
     const t = setInterval(() => void load(true), 15000);
     return () => clearInterval(t);
   }, []);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "end" });
-  }, [rows.length]);
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:py-10">
@@ -80,7 +75,6 @@ export function LogsView() {
                 <p className="mt-1 font-mono text-[11px] text-subtle">{fmtTs(r.ts)} МСК</p>
               </li>
             ))}
-            <div ref={bottomRef} />
           </ul>
         )}
       </div>
