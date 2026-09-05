@@ -190,8 +190,8 @@ export function AdminView({ me }: { me: StaffProfile }) {
                     {me.caps.canGrantOwner ? (
                       <Toggle
                         label="Владелец сайта"
-                        checked={u.isOwner}
-                        disabled={locked || u.isOwner}
+                        checked={u.isOwner || u.isRoot}
+                        disabled={locked || u.isRoot}
                         onChange={(v) => void patch(u.userId, { ...u, isOwner: v })}
                       />
                     ) : null}
