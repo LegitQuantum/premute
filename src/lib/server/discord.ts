@@ -368,48 +368,6 @@ export async function botPower(
   throw new DiscordError(`Panel HTTP ${res.status}`, res.status);
 }
 
-export type ExecResult = {
-  code: number;
-  stdout: string;
-  stderr: string;
-  cwd: string;
-};
-
-export async function botExec(cmd: string, actor: string): Promise<ExecResult> {
-  const body = { secret: panelSecret(), op: "exec", cmd: cmd.slice(0, 2000), actor: actor.slice(0, 80) };
-  const res = await fetch(`${PANEL_BOT_URL}/panel`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(35000),
-  });
-  const json = (await res.json().catch(() => ({}))) as Partial<ExecResult> & { ok?: boolean; error?: string };
-  if (res.ok && json.ok) {
-    return {
-      code: Number(json.code ?? 0),
-      stdout: String(json.stdout ?? ""),
-      stderr: String(json.stderr ?? ""),
-      cwd: String(json.cwd ?? "/root/premute"),
-    };
-  }
-  if (json.error) throw new DiscordError(json.error, res.status);
-  throw new DiscordError(`Panel HTTP ${res.status}`, res.status);
-}
-
-export async function botExecStop(): Promise<void> {
-  const body = { secret: panelSecret(), op: "exec_stop", actor: "console" };
-  const res = await fetch(`${PANEL_BOT_URL}/panel`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(8000),
-  });
-  const json = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
-  if (res.ok && json.ok) return;
-  if (json.error) throw new DiscordError(json.error, res.status);
-  throw new DiscordError(`Panel HTTP ${res.status}`, res.status);
-}
-
 export async function mutateBotMod(opts: {
   op: "mod_add" | "mod_edit" | "mod_del";
   actor: string;
