@@ -181,35 +181,6 @@ export const botPowerFn = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const consoleExecFn = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .validator((d: { cmd: string }) => d)
-  .handler(async ({ context, data }): Promise<{ code: number; stdout: string; stderr: string; cwd: string }> => {
-    const { getStaff, writeLog } = await import("./server/staff");
-    const me = await getStaff(context.userId);
-    // Консоль — только для корневых владельцев бота.
-    if (!me?.caps.canConsole) throw new Error("Доступ к консоли есть только у корневых владельцев.");
-    const cmd = data.cmd.trim().slice(0, 2000);
-    if (!cmd) throw new Error("Пустая команда.");
-    const actor = me.displayName || me.email || context.userId;
-    const { botExec } = await import("./server/discord");
-    const result = await botExec(cmd, actor);
-    await writeLog(context.userId, "exec", cmd);
-    return result;
-  });
-
-export const consoleStopFn = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .validator((_d: unknown) => ({}))
-  .handler(async ({ context, data: _data }): Promise<{ ok: true }> => {
-    const { getStaff } = await import("./server/staff");
-    const me = await getStaff(context.userId);
-    if (!me?.caps.canConsole) throw new Error("Доступ к консоли есть только у корневых владельцев.");
-    const { botExecStop } = await import("./server/discord");
-    await botExecStop();
-    return { ok: true };
-  });
-
 export const playSoundFn = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((d: { file: string; channelId?: string }) => d)
