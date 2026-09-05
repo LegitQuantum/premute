@@ -1,11 +1,21 @@
 import { type ReactNode } from "react";
-import { BarChart3, Power, ScrollText, Shield, ShieldCheck, Trophy, Users, Volume2 } from "lucide-react";
+import { BarChart3, Power, ScrollText, Shield, ShieldCheck, SquareTerminal, Trophy, Users, Volume2 } from "lucide-react";
 import { UserButton } from "@/lib/auth/gates";
 import { cn } from "@/lib/utils";
 import type { Caps } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 
-export type Tab = "home" | "stats" | "tops" | "moderation" | "voice" | "logs" | "power" | "mods" | "admin";
+export type Tab =
+  | "home"
+  | "stats"
+  | "tops"
+  | "moderation"
+  | "voice"
+  | "logs"
+  | "power"
+  | "console"
+  | "mods"
+  | "admin";
 
 export function PanelShell({
   caps,
@@ -27,6 +37,7 @@ export function PanelShell({
     { id: "voice", label: "Голос", icon: Volume2, show: caps.canVoice },
     { id: "logs", label: "Логи", icon: ScrollText, show: caps.canLogs },
     { id: "power", label: "Питание", icon: Power, show: caps.canPower },
+    { id: "console", label: "Консоль", icon: SquareTerminal, show: caps.canConsole },
     { id: "mods", label: "Моды", icon: Users, show: caps.canMods },
     { id: "admin", label: "Админ", icon: Shield, show: caps.canAdmin },
   ];
