@@ -7,6 +7,7 @@ export type Caps = {
   canMods: boolean;
   canLogs: boolean;
   canPower: boolean;
+  canConsole: boolean;
   canAdmin: boolean;
   canGrantOwner: boolean;
   canGrantBotOwner: boolean;
