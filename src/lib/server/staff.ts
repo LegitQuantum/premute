@@ -39,6 +39,8 @@ export function computeCaps(row: {
   const canLogs = isOwner || flag(row.can_logs);
   const canPower = isOwner || flag(row.can_power);
   const canAdmin = isOwner;
+  // Консоль сервера — только корневые владельцы бота. Отдельного тумблера нет.
+  const canConsole = isRoot;
   return {
     isRoot,
     isOwner,
@@ -48,12 +50,13 @@ export function computeCaps(row: {
     canMods,
     canLogs,
     canPower,
+    canConsole,
     canAdmin,
     // Новых «владельцев сайта» может назначать только корневой владелец.
     canGrantOwner: isRoot,
     // Назначать/снимать «владельцев бота» может только корневой владелец.
     canGrantBotOwner: isRoot,
-    waiting: !(canStats || canModeration || canVoice || canMods || canLogs || canPower || canAdmin),
+    waiting: !(canStats || canModeration || canVoice || canMods || canLogs || canPower || canConsole || canAdmin),
   };
 }
 
